@@ -35,4 +35,26 @@ const fetchTransaction = async (req, res, next) => {
   }
 };
 
-export { createTransaction, fetchTransaction };
+// Update Transaction
+const updateTransaction = async (req, res, next) => {
+  try {
+    const { transactionId } = req.params;
+    const updatedPayload = req.body;
+
+    console.log(transactionId);
+    const tx = await Transaction.findOneAndUpdate(
+      transactionId,
+      updatedPayload,
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Transaction is successfully Updated",
+      data: tx,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export { createTransaction, fetchTransaction, updateTransaction };
