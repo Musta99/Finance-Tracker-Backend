@@ -20,8 +20,12 @@ const createTransaction = async (req, res, next) => {
 
 const fetchTransaction = async (req, res, next) => {
   try {
-    const txs = await Transaction.find();
+    const { type, user } = req.query;
+    const filter = {};
+    if (type) filter.type = type;
+    if (user) filter.user = user;
 
+    const txs = await Transaction.find(filter);
     res.status(200).json({
       message: "Successfully Fetched Transactions",
       data: txs,
