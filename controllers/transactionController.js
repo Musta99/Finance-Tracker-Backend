@@ -57,4 +57,25 @@ const updateTransaction = async (req, res, next) => {
   }
 };
 
-export { createTransaction, fetchTransaction, updateTransaction };
+// Delete Transaction
+const deleteTransaction = async (req, res, next) => {
+  try {
+    const { transactionId } = req.params;
+    console.log(transactionId);
+
+    const tx = await Transaction.findOneAndDelete(transactionId);
+
+    res.status(200).json({
+      message: "Transaction has been successfully deleted",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export {
+  createTransaction,
+  fetchTransaction,
+  updateTransaction,
+  deleteTransaction,
+};
