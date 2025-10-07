@@ -1,0 +1,35 @@
+1. What is the Finance Tracker app?
+Finance Tracker is a personal finance management app that helps you record income and expenses, set budgets, track savings goals, and view insightful analytics about your spending habits — all in one place.
+
+2. Is my financial data safe?
+Yes. Your data is securely stored using industry-standard encryption. We never sell or share your personal financial information with third parties.
+
+3. Do I need an internet connection to use it?
+You can log transactions offline, and they’ll sync automatically once you’re back online.
+
+4. Can I link my bank accounts?
+Depending on your region and app version, you can connect your bank accounts securely via supported open-banking providers to import transactions automatically.
+
+5. How do I create a budget?
+Go to the “Budgets” tab, select Create Budget, choose a category (e.g., Food, Transport), and set a monthly or weekly limit. The app will alert you when you’re close to exceeding your limit.
+
+6. Can I export my data?
+Yes. You can export your transactions, reports, or summaries as CSV or PDF from the Settings → Data Export menu.
+
+7. Does Finance Tracker support multiple currencies?
+Yes. You can choose your preferred currency in Settings. If you travel often, the app can automatically convert expenses to your default currency.
+
+8. How can I back up my data?
+Your data is automatically backed up to the cloud if you’re signed in with your account. You can also create manual backups in Settings → Backup & Restore.
+
+9. Can I use the app on multiple devices?
+Yes. Just sign in with the same account, and your data will sync across all your devices.
+
+10. How can I recover my account if I forget my password?
+Tap Forgot Password on the login screen and follow the email instructions to reset it securely.
+
+11. Is there a premium version?
+Yes. The premium version unlocks advanced analytics, multi-device syncing, unlimited budgets, and priority support. You can upgrade anytime from the app.
+
+12. How do I contact support?
+You can reach us via Settings → Help & Support or email us at support@financetracker.app. Our team typically responds within 24 hours.
