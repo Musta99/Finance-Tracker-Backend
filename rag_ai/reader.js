@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
   apiKey: process.env.GOOGLE_API_KEY,
-  model: "gemini-2.0-flash",
+  model: "text-embedding-004",
 });
 
 // const embeddings = new FakeEmbeddings();
@@ -25,8 +25,8 @@ try {
   const docs = await loader.load();
 
   const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 1000,
-    chunkOverlap: 100,
+    chunkSize: 200,
+    chunkOverlap: 20,
   });
 
   const splittedDocs = await splitter.splitDocuments(docs);
