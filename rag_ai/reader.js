@@ -55,13 +55,14 @@ try {
   });
 
   const promptTemplate = ChatPromptTemplate.fromTemplate(
-    "Tell me the difference between: {subject}"
+    "Please convert my question to standalone question that is understood by LLLM: {question}"
   );
 
   const chain = promptTemplate.pipe(llm);
 
   const response = await chain.invoke({
-    subject: "fromtemplate and fromDocument in langchain",
+    question:
+      "I bought a t-shirt from your shop but it colud be unmatched with my size, and that is why I want to know the return policy of yours.",
   });
 
   console.log(response.content);
