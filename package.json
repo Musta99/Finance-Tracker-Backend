@@ -16,6 +16,7 @@
     "@langchain/core": "^0.3.78",
     "@langchain/google-genai": "^0.2.18",
     "@supabase/supabase-js": "^2.74.0",
+    "@upstash/redis": "^1.35.5",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",

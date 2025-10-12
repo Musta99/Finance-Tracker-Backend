@@ -62,17 +62,20 @@ try {
     "Please convert my question to standalone question that is understood by LLM: {question}"
   );
 
+  const res = response.map((r) => r.pageContent).join("\n");
+
   const chain = promptTemplate
     .pipe(llm)
     .pipe(new StringOutputParser())
-    .pipe(retrieve);
+    .pipe(retrieve)
+    .pipe(res);
 
   const response = await chain.invoke({
     question:
       "I bought a t-shirt from your shop but it colud be unmatched with my size, and that is why I want to know the process of contacting your support system.",
   });
 
-  console.log(response);
+  print(response);
 } catch (err) {
   console.log("Some error occured", err);
 }
