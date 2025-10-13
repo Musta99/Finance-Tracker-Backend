@@ -17,3 +17,5 @@ const port = process.env.PORT || 5000;
     console.log("Some error occured", err);
   }
 })();
+
+export default app;
