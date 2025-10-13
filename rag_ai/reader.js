@@ -33,7 +33,7 @@ const supabaseClient = createClient(
   process.env.SUPABASE_API_KEY
 );
 
-//. Redis Initialiation
+// Redis Initialiation
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -42,6 +42,15 @@ const redis = new Redis({
 async function ingestPDFIfNeeded(
   pdfRelativePath = "../data/finance_tracker.pdf"
 ) {
+  const { data: existing, error } = await supabaseClient
+    .from("documents")
+    .select("id")
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    console.log("Skipping ingestion — documents already exist in Supabase.");
+    return false;
+  }
   const pdfPath = path.join(__dirname, pdfRelativePath);
   const loader = new PDFLoader(pdfPath);
 
@@ -51,7 +60,7 @@ async function ingestPDFIfNeeded(
   // split
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 800,
-    chunkOverlap: 100,
+    chunkOverlap: 50,
   });
   let splittedDocs = await splitter.splitDocuments(docs);
 
@@ -180,26 +189,28 @@ Answer in a friendly, helpful tone:
 }
 
 // run ingestion once (comment out after initial run to avoid duplicate inserts)
-(async () => {
-  try {
-    console.log("Starting ingestion (if needed)...");
-    await ingestPDFIfNeeded("../data/finance_tracker.pdf");
-  } catch (err) {
-    console.warn("Ingest warning:", err.message || err);
-  }
+// (async () => {
+//   try {
+//     console.log("Starting ingestion (if needed)...");
+//     await ingestPDFIfNeeded("../data/finance_tracker.pdf");
+//   } catch (err) {
+//     console.warn("Ingest warning:", err.message || err);
+//   }
 
-  // example chat:
-  try {
-    const out = await ragChat({
-      userId: "user_123",
-      question: "Can I use finance Tracker offline?",
-    });
-    console.log("BOT ANSWER:\n", out.answer);
-    console.log(
-      "SOURCES:\n",
-      out.sourceDocs.map((d) => d.pageContent.slice(0, 200))
-    );
-  } catch (err) {
-    console.error("Chat error:", err);
-  }
-})();
+//   // example chat:
+//   try {
+//     const out = await ragChat({
+//       userId: "user_123",
+//       question: "What is motlob",
+//     });
+//     console.log("BOT ANSWER:\n", out.answer);
+//     console.log(
+//       "SOURCES:\n",
+//       out.sourceDocs.map((d) => d.pageContent.slice(0, 200))
+//     );
+//   } catch (err) {
+//     console.error("Chat error:", err);
+//   }
+// })();
+
+export { ragChat, ingestPDFIfNeeded, redis };
