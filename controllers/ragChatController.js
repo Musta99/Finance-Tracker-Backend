@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
-import { ragChat, redis, ingestPDFIfNeeded } from "../rag_ai/reader.js";
+import {
+  ragChat,
+  redis,
+  ingestPDFIfNeeded,
+  ragChatStream,
+} from "../rag_ai/reader.js";
 
 const chatAI = async (req, res) => {
   ingestPDFIfNeeded();
@@ -39,4 +44,24 @@ const fetchChat = async (req, res) => {
   }
 };
 
-export { chatAI, fetchChat };
+// RAG chat Streaming
+const ragChatStreaming = async (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  // const { userId, question } = req.body;
+
+  const userId = "user420";
+  const question = req.query.q;
+
+  const stream = await ragChatStream({ userId, question });
+  for await (const chunk of stream) {
+    res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+  }
+
+  res.write("data: [DONE]\n\n");
+  res.end();
+};
+
+export { chatAI, fetchChat, ragChatStreaming };

@@ -113,13 +113,82 @@ async function saveMessage(userId = "default_user", role = "user", text = "") {
   await redis.ltrim(key, 0, 199); // Keep last 200 messages
 }
 
+// **************** RAG Chat Steaming ***************
+
+async function ragChatStream({ userId, question }) {
+  // 1) Standalone Question
+  const rephrasePrompt = ChatPromptTemplate.fromTemplate(
+    "Rewrite the user question into a concise standalone question suitable for retrieval:\n\n{question}"
+  );
+  const rephraseChain = rephrasePrompt.pipe(llm).pipe(new StringOutputParser());
+  const standAlone = await rephraseChain.invoke({
+    question,
+  });
+  const query =
+    typeof standAlone === "string" && standAlone.length > 0
+      ? standAlone
+      : question;
+
+  // 2) Retriever from Vector store
+  const vectorStore = await SupabaseVectorStore.fromExistingIndex({
+    client: supabaseClient,
+    tableName: process.env.SUPABASE_TABLE,
+    queryName: process.env.SUPABASE_QUERY_NAME,
+  }).catch(async (e) => {
+    return await SupabaseVectorStore.fromDocuments([], embeddings, {
+      client: supabaseClient,
+      tableName: process.env.SUPABASE_TABLE,
+      queryName: process.env.SUPABASE_QUERY_NAME,
+    });
+  });
+  const retrieve = vectorStore.asRetriever();
+
+  // 3) Retrieve
+  const docs = await retrieve._getRelevantDocuments(query);
+  // ilter out empties
+  const nonEmptyDocs = (docs || []).filter(
+    (d) => d.pageContent && d.pageContent.trim().length > 0
+  );
+
+  //4) if no docs then ask to contact helpline
+  // if (!nonEmptyDocs || nonEmptyDocs.length === 0) {
+  //   const fallback =
+  //     "I’m sorry — I couldn’t find anything in the provided documents about that. Please contact our support/helpline for help. Would you like me to provide the contact information?";
+  //   // Save conversation
+  //   await saveMessage(userId, "user", question);
+  //   await saveMessage(userId, "assistant", fallback);
+  //   return { answer: fallback, sourceDocs: [] };
+  // }
+
+  // 5) Build the context and ask the LLM with friendly tone
+  const context = nonEmptyDocs
+    .map((d, i) => `Source ${i + 1}:\n${d.pageContent}`)
+    .join("\n\n---\n\n");
+  const answerPrompt = ChatPromptTemplate.fromTemplate(`
+You are a friendly support assistant for a finance-tracker app. Use the following context extracted from the user's documents to answer the user's question.
+Be concise, helpful, and friendly. If the answer is not found in the context, say you can't find it and advise contacting support.
+Context:
+{context}
+Question:
+{question}
+Answer in a friendly, helpful tone:
+`);
+
+  // Stream instead of invoke
+  const stream = answerPrompt.pipe(llm).pipe(new StringOutputParser()).stream({
+    context,
+    question: query,
+  });
+
+  return stream;
+}
+
 // ****** the main RAG Chat function *********
 async function ragChat({ userId = "default_user", question = "" }) {
   // 1) Standalone Question
   const rephrasePrompt = ChatPromptTemplate.fromTemplate(
     "Rewrite the user question into a concise standalone question suitable for retrieval:\n\n{question}"
   );
-
   const rephraseChain = rephrasePrompt.pipe(llm).pipe(new StringOutputParser());
   const standAlone = await rephraseChain.invoke({
     question,
@@ -167,16 +236,12 @@ async function ragChat({ userId = "default_user", question = "" }) {
   const answerPrompt = ChatPromptTemplate.fromTemplate(`
 You are a friendly support assistant for a finance-tracker app. Use the following context extracted from the user's documents to answer the user's question.
 Be concise, helpful, and friendly. If the answer is not found in the context, say you can't find it and advise contacting support.
-
 Context:
 {context}
-
 Question:
 {question}
-
 Answer in a friendly, helpful tone:
 `);
-
   const answerChain = answerPrompt.pipe(llm).pipe(new StringOutputParser());
   const answer = await answerChain.invoke({ context, question: query });
 
@@ -188,29 +253,4 @@ Answer in a friendly, helpful tone:
   return { answer, sourceDocs: nonEmptyDocs.slice(0, 4) };
 }
 
-// run ingestion once (comment out after initial run to avoid duplicate inserts)
-// (async () => {
-//   try {
-//     console.log("Starting ingestion (if needed)...");
-//     await ingestPDFIfNeeded("../data/finance_tracker.pdf");
-//   } catch (err) {
-//     console.warn("Ingest warning:", err.message || err);
-//   }
-
-//   // example chat:
-//   try {
-//     const out = await ragChat({
-//       userId: "user_123",
-//       question: "What is motlob",
-//     });
-//     console.log("BOT ANSWER:\n", out.answer);
-//     console.log(
-//       "SOURCES:\n",
-//       out.sourceDocs.map((d) => d.pageContent.slice(0, 200))
-//     );
-//   } catch (err) {
-//     console.error("Chat error:", err);
-//   }
-// })();
-
-export { ragChat, ingestPDFIfNeeded, redis };
+export { ragChat, ingestPDFIfNeeded, redis, ragChatStream };
