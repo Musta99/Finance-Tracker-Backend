@@ -53,14 +53,14 @@ const ragChatStreaming = async (req, res) => {
   // const { userId, question } = req.body;
 
   const userId = "user420";
-  const question = req.query.q;
+  const question = req.body;
 
   const stream = await ragChatStream({ userId, question });
   for await (const chunk of stream) {
-    res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+    // res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+    res.write(chunk);
   }
 
-  res.write("data: [DONE]\n\n");
   res.end();
 };
 

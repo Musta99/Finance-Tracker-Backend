@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.post("/ask", chatAI);
 router.get("/chat/:userId", fetchChat);
-router.get("/stream-chat", ragChatStreaming);
+router.post("/stream-chat", ragChatStreaming);
 
 export default router;
